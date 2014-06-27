@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from setuptools import setup, find_packages
 from __future__ import print_function
+from setuptools import setup, find_packages
 import os, re
 
 PKG='oauth2'
