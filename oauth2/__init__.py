@@ -34,7 +34,7 @@ try:
     import urlparse
 except ImportError:
     # urlparse location changed in python 3
-    from urllib.parse import urlparse
+    from urllib.parse as urlparse
 
 try:
     from urlparse import parse_qs
