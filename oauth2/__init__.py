@@ -181,7 +181,7 @@ def escape(s):
     try:
         return urllib.quote(s.encode('utf-8'), safe='~')
     except AttributeError:
-        return urllib.parse.quote(s.encode('utf-8'), safe='~')
+        return urlparse.quote(s.encode('utf-8'), safe='~')
 
 def generate_timestamp():
     """Get seconds since epoch (UTC)."""
@@ -231,8 +231,10 @@ class Consumer(object):
     def __str__(self):
         data = {'oauth_consumer_key': self.key,
             'oauth_consumer_secret': self.secret}
-
-        return urllib.urlencode(data)
+        try:
+            return urllib.urlencode(data)
+        except AttributeError:
+            return urlparse.urlencode(data)
 
 
 class Token(object):
@@ -300,7 +302,10 @@ class Token(object):
 
         if self.callback_confirmed is not None:
             data['oauth_callback_confirmed'] = self.callback_confirmed
-        return urllib.urlencode(data)
+        try:
+            return urllib.urlencode(data)
+        except AttributeError:
+            return urlparse.urlencode(data)
  
     @staticmethod
     def from_string(s):
@@ -434,7 +439,10 @@ class Request(dict):
         # tell urlencode to deal with sequence values and map them correctly
         # to resulting querystring. for example self["k"] = ["v1", "v2"] will
         # result in 'k=v1&k=v2' and not k=%5B%27v1%27%2C+%27v2%27%5D
-        return urllib.urlencode(d, True).replace('+', '%20')
+        try:
+            return urllib.urlencode(d, True).replace('+', '%20')
+        except AttributeError:
+            return urlparse.urlencode(d, True).replace('+', '%20')
  
     def to_url(self):
         """Serialize as a URL for a GET request."""
@@ -462,9 +470,14 @@ class Request(dict):
             params = base_url[3]
             fragment = base_url[5]
         
-        url = (scheme, netloc, path, params,
-               urllib.urlencode(query, True), fragment)
-        return urlparse.urlunparse(url)
+        try:
+            url = (scheme, netloc, path, params,
+                   urllib.urlencode(query, True), fragment)
+            return urllib.urlunparse(url)
+        except AttributeError:
+            url = (scheme, netloc, path, params,
+                   urlparse.urlencode(query, True), fragment)
+            return urlparse.urlunparse(url)
 
     def get_parameter(self, parameter):
         ret = self.get(parameter)
@@ -512,7 +525,10 @@ class Request(dict):
         items.extend(url_items)
 
         items.sort()
-        encoded_str = urllib.urlencode(items)
+        try:
+            encoded_str = urllib.urlencode(items)
+        except AttributeError:
+            encoded_str = urlparse.urlencode(items)
         # Encode signature parameters per Oauth Core 1.0 protocol
         # spec draft 7, section 3.6
         # (http://tools.ietf.org/html/draft-hammer-oauth-07#section-3.6)
@@ -641,7 +657,7 @@ class Request(dict):
             try:
                 params[param_parts[0]] = urllib.unquote(param_parts[1].strip('\"'))
             except AttributeError:
-                params[param_parts[0]] = urllib.parse.unquote(param_parts[1].strip('\"'))
+                params[param_parts[0]] = urlparse.unquote(param_parts[1].strip('\"'))
         return params
  
     @staticmethod
@@ -652,7 +668,7 @@ class Request(dict):
             try:
                 parameters[k] = urllib.unquote(v[0])
             except AttributeError:
-                parameters[k] = urllib.parse.unquote(v[0])
+                parameters[k] = urlparse.unquote(v[0])
         return parameters
 
 
@@ -704,13 +720,19 @@ class Client(httplib2.Http):
             parameters=parameters, body=body, is_form_encoded=is_form_encoded)
 
         req.sign_request(self.method, self.consumer, self.token)
-
-        schema, rest = urllib.splittype(uri)
+        
+        try:
+            schema, rest = urllib.splittype(uri)
+        except AttributeError:
+            schema, rest = urlparse.splittype(uri)
         if rest.startswith('//'):
             hierpart = '//'
         else:
             hierpart = ''
-        host, rest = urllib.splithost(rest)
+        try:
+            host, rest = urllib.splithost(rest)
+        except AttributeError:
+            host, rest = urlparse.splithost(rest)
 
         realm = schema + ':' + hierpart + host
 
