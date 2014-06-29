@@ -26,10 +26,15 @@ import base64
 import urllib
 import time
 import random
-import urlparse
 import hmac
 import binascii
 import httplib2
+
+try:
+    import urlparse
+except ImportError:
+    # urlparse location changed in python 3
+    from urllib.parse import urlparse
 
 try:
     from urlparse import parse_qs
