@@ -146,7 +146,6 @@ def to_utf8_if_string(s):
             return to_utf8(s)
         else:
             return s
-    except NameError:
 
 def to_unicode_optional_iterator(x):
     """
