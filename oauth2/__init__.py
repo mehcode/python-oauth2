@@ -178,7 +178,10 @@ def to_utf8_optional_iterator(x):
 
 def escape(s):
     """Escape a URL including any /."""
-    return urllib.quote(s.encode('utf-8'), safe='~')
+    try:
+        return urllib.quote(s.encode('utf-8'), safe='~')
+    except AttributeError:
+        return urllib.parse.quote(s.encode('utf-8'), safe='~')
 
 def generate_timestamp():
     """Get seconds since epoch (UTC)."""
@@ -635,7 +638,10 @@ class Request(dict):
             # Split key-value.
             param_parts = param.split('=', 1)
             # Remove quotes and unescape the value.
-            params[param_parts[0]] = urllib.unquote(param_parts[1].strip('\"'))
+            try:
+                params[param_parts[0]] = urllib.unquote(param_parts[1].strip('\"'))
+            except AttributeError:
+                params[param_parts[0]] = urllib.parse.unquote(param_parts[1].strip('\"'))
         return params
  
     @staticmethod
@@ -643,7 +649,10 @@ class Request(dict):
         """Turn URL string into parameters."""
         parameters = parse_qs(param_str.encode('utf-8'), keep_blank_values=True)
         for k, v in parameters.items():
-            parameters[k] = urllib.unquote(v[0])
+            try:
+                parameters[k] = urllib.unquote(v[0])
+            except AttributeError:
+                parameters[k] = urllib.parse.unquote(v[0])
         return parameters
 
 
