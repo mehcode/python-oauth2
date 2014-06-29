@@ -103,28 +103,37 @@ def to_unicode(s):
     """ Convert to unicode, raise exception with instructive error
     message if s is not unicode, ascii, or utf-8. """
     # Python 3 strings are unicode (utf-8) by default
-    #if not isinstance(s, unicode):
-    #    if not isinstance(s, str):
-    #        raise TypeError('You are required to pass either unicode or string here, not: %r (%s)' % (type(s), s))
-    #    try:
-    #        s = s.decode('utf-8')
-    #    except UnicodeDecodeError as le:
-    #        raise TypeError('You are required to pass either a unicode object or a utf-8 string here. You passed a Python string object which contained non-utf-8: %r. The UnicodeDecodeError that resulted from attempting to interpret it as utf-8 was: %s' % (s, le,))
+    try:
+        if not isinstance(s, unicode):
+            if not isinstance(s, str):
+                raise TypeError('You are required to pass either unicode or string here, not: %r (%s)' % (type(s), s))
+            try:
+                s = s.decode('utf-8')
+            except UnicodeDecodeError as le:
+                raise TypeError('You are required to pass either a unicode object or a utf-8 string here. You passed a Python string object which contained non-utf-8: %r. The UnicodeDecodeError that resulted from attempting to interpret it as utf-8 was: %s' % (s, le,))
+    except NameError:
+        pass
     return s
 
 def to_utf8(s):
     return to_unicode(s).encode('utf-8')
 
 def to_unicode_if_string(s):
-    if isinstance(s, basestring):
-        return to_unicode(s)
-    else:
+    try:
+        if isinstance(s, basestring):
+            return to_unicode(s)
+        else:
+            return s
+    except NameError:
         return s
 
 def to_utf8_if_string(s):
-    if isinstance(s, basestring):
-        return to_utf8(s)
-    else:
+    try:
+        if isinstance(s, basestring):
+            return to_utf8(s)
+        else:
+            return s
+    except NameError:
         return s
 
 def to_unicode_optional_iterator(x):
@@ -132,8 +141,12 @@ def to_unicode_optional_iterator(x):
     Raise TypeError if x is a str containing non-utf8 bytes or if x is
     an iterable which contains such a str.
     """
-    if isinstance(x, basestring):
-        return to_unicode(x)
+    try:
+        if isinstance(x, basestring):
+            return to_unicode(x)
+    except NameError:
+        if isinstance(x, str):
+            return x
 
     try:
         l = list(x)
@@ -148,8 +161,12 @@ def to_utf8_optional_iterator(x):
     Raise TypeError if x is a str or if x is an iterable which
     contains a str.
     """
-    if isinstance(x, basestring):
-        return to_utf8(x)
+    try:
+        if isinstance(x, basestring):
+            return to_utf8(x)
+    except NameError:
+        if isinstance(x, str):
+            return x
 
     try:
         l = list(x)
@@ -461,16 +478,28 @@ class Request(dict):
                 continue
             # 1.0a/9.1.1 states that kvp must be sorted by key, then by value,
             # so we unpack sequence values into multiple items for sorting.
-            if isinstance(value, basestring):
-                items.append((to_utf8_if_string(key), to_utf8(value)))
-            else:
-                try:
-                    value = list(value)
-                except TypeError as e:
-                    assert 'is not iterable' in str(e)
-                    items.append((to_utf8_if_string(key), to_utf8_if_string(value)))
+            try:
+                if isinstance(value, basestring):
+                    items.append((to_utf8_if_string(key), to_utf8(value)))
                 else:
-                    items.extend((to_utf8_if_string(key), to_utf8_if_string(item)) for item in value)
+                    try:
+                        value = list(value)
+                    except TypeError as e:
+                        assert 'is not iterable' in str(e)
+                        items.append((to_utf8_if_string(key), to_utf8_if_string(value)))
+                    else:
+                        items.extend((to_utf8_if_string(key), to_utf8_if_string(item)) for item in value)
+            except NameError:
+                if isinstance(value, str):
+                    items.append((to_utf8_if_string(key), to_utf8(value)))
+                else:
+                    try:
+                        value = list(value)
+                    except TypeError as e:
+                        assert 'is not iterable' in str(e)
+                        items.append((to_utf8_if_string(key), to_utf8_if_string(value)))
+                    else:
+                        items.extend((to_utf8_if_string(key), to_utf8_if_string(item)) for item in value)
 
         # Include any query string parameters from the provided URL
         query = urlparse.urlparse(self.url)[4]
