@@ -112,7 +112,12 @@ def to_unicode(s):
             except UnicodeDecodeError as le:
                 raise TypeError('You are required to pass either a unicode object or a utf-8 string here. You passed a Python string object which contained non-utf-8: %r. The UnicodeDecodeError that resulted from attempting to interpret it as utf-8 was: %s' % (s, le,))
     except NameError:
-        pass
+        if not isinstance(s, str):
+                raise TypeError('You are required to pass either unicode or string here, not: %r (%s)' % (type(s), s))
+        try:
+            s = s.decode('utf-8')
+        except UnicodeDecodeError as le:
+            raise TypeError('You are required to pass either a unicode object or a utf-8 string here. You passed a Python string object which contained non-utf-8: %r. The UnicodeDecodeError that resulted from attempting to interpret it as utf-8 was: %s' % (s, le,))
     return s
 
 def to_utf8(s):
@@ -125,7 +130,10 @@ def to_unicode_if_string(s):
         else:
             return s
     except NameError:
-        return s
+        if isinstance(s, str):
+            return to_unicode(s)
+        else:
+            return s
 
 def to_utf8_if_string(s):
     try:
@@ -134,7 +142,11 @@ def to_utf8_if_string(s):
         else:
             return s
     except NameError:
-        return s
+        if isinstance(s, str):
+            return to_utf8(s)
+        else:
+            return s
+    except NameError:
 
 def to_unicode_optional_iterator(x):
     """
@@ -146,7 +158,7 @@ def to_unicode_optional_iterator(x):
             return to_unicode(x)
     except NameError:
         if isinstance(x, str):
-            return x
+            return to_unicode(x)
 
     try:
         l = list(x)
@@ -166,7 +178,7 @@ def to_utf8_optional_iterator(x):
             return to_utf8(x)
     except NameError:
         if isinstance(x, str):
-            return x
+            return to_utf8(x)
 
     try:
         l = list(x)
