@@ -115,7 +115,7 @@ def to_unicode(s):
         if not isinstance(s, str):
                 raise TypeError('You are required to pass either unicode or string here, not: %r (%s)' % (type(s), s))
         try:
-            s = s.decode('utf-8')
+            s = s.encode('utf-8')
         except UnicodeDecodeError as le:
             raise TypeError('You are required to pass either a unicode object or a utf-8 string here. You passed a Python string object which contained non-utf-8: %r. The UnicodeDecodeError that resulted from attempting to interpret it as utf-8 was: %s' % (s, le,))
     return s
@@ -914,7 +914,7 @@ class SignatureMethod_HMAC_SHA1(SignatureMethod):
         """Builds the base signature string."""
         key, raw = self.signing_base(request, consumer, token)
 
-        hashed = hmac.new(key.encode('bytearray'), raw, sha)
+        hashed = hmac.new(key.encode('utf-8'), raw.encode('utf-8'), sha)
 
         # Calculate the digest base 64.
         return binascii.b2a_base64(hashed.digest())[:-1]
