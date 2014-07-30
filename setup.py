@@ -37,5 +37,6 @@ setup(name=PKG,
       license = "MIT License",
       keywords="oauth",
       zip_safe = True,
+      use_2to3=True,
       test_suite="tests",
       tests_require=['coverage', 'mock'])
