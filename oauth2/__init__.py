@@ -674,7 +674,7 @@ class Request(dict):
     @staticmethod
     def _split_url_string(param_str):
         """Turn URL string into parameters."""
-        parameters = parse_qs(param_str.encode('utf-8'), keep_blank_values=True)
+        parameters = parse_qs(param_str, keep_blank_values=True)
         for k, v in parameters.items():
             try:
                 parameters[k] = urllib.unquote(v[0])
